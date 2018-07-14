@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+
+  workspace:
+    build:
+      context: ./workspace
+    volumes:
+      - ../docker-projects:/var/www
+
+  nginx:
+    build:
+      context: ./nginx
+    volumes:
+      - ../docker-projects:/var/www
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/sites/:/etc/nginx/sites-available
+      - ./nginx/conf.d/:/etc/nginx/conf.d
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - php-fpm
+
+  mysql:
+    build:
+      context: ./mysql
+    environment:
+      - MYSQL_DATABASE=mydb
+      - MYSQL_USER=danil
+      - MYSQL_PASSWORD=danil
+      - MYSQL_ROOT_PASSWORD=root
+
+  php-fpm:
+    build:
+      context: ./php-fpm
+    volumes:
+      - ../docker-projects:/var/www
+    depends_on:
+      - workspace
