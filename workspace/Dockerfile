@@ -26,6 +26,7 @@ ENV LC_ALL=en_US.UTF-8
 ENV LC_CTYPE=en_US.UTF-8
 ENV LANG=en_US.UTF-8
 ENV TERM xterm
+ENV NVM_DIR /home/danilka/.nvm
 
 # Add the "PHP 7" ppa
 RUN apt-get install -y software-properties-common && \
@@ -72,19 +73,44 @@ RUN apt-get update && \
         postgresql-client \
     && apt-get clean
 
+USER danilka
+
+# Install nvm (A Node Version Manager)
+RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash \
+    && . $NVM_DIR/nvm.sh \
+    && nvm install node \
+    && nvm use node \
+    && nvm alias node \
+    && npm install -g @vue/cli
+
+RUN echo "" >> ~/.bashrc && \
+    echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc && \
+    echo '[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm' >> ~/.bashrc \
+
+# Add NVM binaries to root's .bashrc
+USER root
+
+RUN echo "" >> ~/.bashrc && \
+    echo 'export NVM_DIR="/home/danilka/.nvm"' >> ~/.bashrc && \
+    echo '[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm' >> ~/.bashrc \
+
+# Add PATH for node
+ENV PATH $PATH:$NVM_DIR/versions/node/vnode/bin
+
 #####################################
 # Composer:
 #####################################
-
+USER root
 # Install composer and add its bin to the PATH.
 RUN curl -s http://getcomposer.org/installer | php && \
     mv composer.phar /usr/local/bin/composer
 
+USER danilka
 # Source the bash
 RUN . ~/.bashrc
-
 RUN composer global require "laravel/installer"
 
+USER root
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 WORKDIR /var/www
