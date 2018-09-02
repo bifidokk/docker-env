@@ -110,6 +110,19 @@ USER danilka
 RUN . ~/.bashrc
 RUN composer global require "laravel/installer"
 
+###########################################################################
+# xDebug:
+###########################################################################
+USER root
+
+# Load the xdebug extension only with phpunit commands
+RUN apt-get install -y --force-yes php7.2-xdebug && \
+    sed -i 's/^;//g' /etc/php/7.2/cli/conf.d/20-xdebug.ini && \
+    echo "alias phpunit='php -dzend_extension=xdebug.so /var/www/vendor/bin/phpunit'" >> ~/.bashrc
+
+# ADD for REMOTE debugging
+COPY ./xdebug.ini /etc/php/7.2/cli/conf.d/xdebug.ini
+
 USER root
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
