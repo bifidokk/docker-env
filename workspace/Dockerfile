@@ -71,6 +71,10 @@ RUN apt-get update && \
         vim \
         nano \
         postgresql-client \
+        zlib1g-dev \
+        libpng-dev \
+        autoconf \
+        autoconf-archive \
     && apt-get clean
 
 USER danilka
@@ -122,6 +126,10 @@ RUN apt-get install -y --force-yes php7.2-xdebug && \
 
 # ADD for REMOTE debugging
 COPY ./xdebug.ini /etc/php/7.2/cli/conf.d/xdebug.ini
+
+RUN printf "\n" | pecl -q install -o -f redis && \
+    echo "extension=redis.so" >> /etc/php/7.2/mods-available/redis.ini && \
+    phpenmod redis
 
 USER root
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

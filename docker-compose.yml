@@ -41,5 +41,13 @@ services:
       context: ./php-fpm
     volumes:
       - ../docker-projects:/var/www
+      - ./php-fpm/php72.ini:/usr/local/etc/php/php.ini
     depends_on:
       - workspace
+
+  redis:
+    build: ./redis
+    volumes:
+      - ../docker-projects/redis:/data
+    ports:
+      - "6380:6379"
